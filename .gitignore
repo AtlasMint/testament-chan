@@ -1,0 +1,5 @@
+# Environment, create your own
+.env
+
+# All jsons that are exports of chat
+export_*.json
