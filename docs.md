@@ -14,3 +14,4 @@ Export current chat with a start and end date. If no date(s) are given, it will 
 🚧 NOT DONE 🚧
 
 Reads current chat with a start and end date and answers the prompt. If no date(s) are given, it will take the earliest or latest possible message from the chat dates respectively.
+
