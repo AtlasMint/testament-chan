@@ -68,7 +68,8 @@ async def on_message(message):
     trigger_phrases = [
         'ruby-chan', 'ruby chan', 'nani ga suki?', 
         'wachi ate fries', 'top 10 people i hate',
-        'jc muscle'
+        'jc muscle', 'edwin shower',
+        'smart abel wallpaper download'
     ]
 
     if message_content in trigger_phrases:
@@ -111,10 +112,32 @@ async def on_message(message):
             except FileNotFoundError:
                 print("Error: The image file was not found at the specified path.")
                 await message.channel.send("I don't hate people 👼")
-        elif message_content == 'js muscle':
+        elif message_content == 'jc muscle':
         # Define the path to your image
         # This assumes your script is in the root folder and the image is in /images/
             image_path = 'assets/images/JCSEX.png'
+            
+            try:
+                # Create a discord.File object and send it
+                await message.channel.send(file=discord.File(image_path))
+            except FileNotFoundError:
+                print("Error: The image file was not found at the specified path.")
+                await message.channel.send("JC got banned from planet fitness for tax evasion 💔")
+        elif message_content == 'smart abel wallpaper download':
+        # Define the path to your image
+        # This assumes your script is in the root folder and the image is in /images/
+            image_path = 'assets/images/smart_Abel_wallpaper_download.jpg'
+            
+            try:
+                # Create a discord.File object and send it
+                await message.channel.send(file=discord.File(image_path))
+            except FileNotFoundError:
+                print("Error: The image file was not found at the specified path.")
+                await message.channel.send("JC got banned from planet fitness for tax evasion 💔")
+        elif message_content == 'edwin shower':
+        # Define the path to your image
+        # This assumes your script is in the root folder and the image is in /images/
+            image_path = 'assets/images/edwin_shower.jpg'
             
             try:
                 # Create a discord.File object and send it
