@@ -66,7 +66,8 @@ async def on_message(message):
 
     # --- We want to apply a cooldown to these specific responses ---
     trigger_phrases = [
-        'ruby-chan', 'ruby chan', 'nani ga suki?', 'wachi ate fries'
+        'ruby-chan', 'ruby chan', 'nani ga suki?', 
+        'wachi ate fries', 'top 10 people i hate'
     ]
 
     if message_content in trigger_phrases:
@@ -98,6 +99,17 @@ async def on_message(message):
             except FileNotFoundError:
                 print("Error: The image file was not found at the specified path.")
                 await message.channel.send("Oops! Wachi too short, not found")
+        elif message_content == 'top 10 people i hate':
+        # Define the path to your image
+        # This assumes your script is in the root folder and the image is in /images/
+            image_path = 'assets/images/top_10_people_that_i_hate.png'
+            
+            try:
+                # Create a discord.File object and send it
+                await message.channel.send(file=discord.File(image_path))
+            except FileNotFoundError:
+                print("Error: The image file was not found at the specified path.")
+                await message.channel.send("I don't hate people 👼")
 
         # Update the user's cooldown timestamp AFTER responding.
         gemini_cooldowns[user_id] = current_time
