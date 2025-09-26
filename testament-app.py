@@ -56,6 +56,13 @@ async def on_ready():
         print(f"Failed to sync commands: {e}")
     print(f'{bot.user} is now online and ready!')
 
+trigger_phrases = [
+    'ruby-chan', 'ruby chan', 'nani ga suki?', 
+    'wachi ate fries', 'top 10 people i hate',
+    'jc muscle', 'edwin shower',
+    'smart abel wallpaper download'
+]
+
 @bot.event
 async def on_message(message):
     # Prevent the bot from replying to itself
@@ -63,14 +70,6 @@ async def on_message(message):
         return
 
     message_content = message.content.lower()
-
-    # --- We want to apply a cooldown to these specific responses ---
-    trigger_phrases = [
-        'ruby-chan', 'ruby chan', 'nani ga suki?', 
-        'wachi ate fries', 'top 10 people i hate',
-        'jc muscle', 'edwin shower',
-        'smart abel wallpaper download'
-    ]
 
     if message_content in trigger_phrases:
         # --- COOLDOWN LOGIC MOVED INSIDE ---
@@ -269,6 +268,23 @@ async def export(interaction: discord.Interaction, start_date: str = None, end_d
     except Exception as e:
         print(f"An unexpected error occurred during export: {e}")
         await interaction.followup.send(f"An unexpected error occurred: {e}", ephemeral=True)
+
+# --- /help Command ---
+@bot.tree.command(name="help", description="Help me what are the commands??")
+async def help(interaction: discord.Interaction):
+    """
+    Gives all commands and trigger phrases
+    """
+    phrases_tosend = trigger_phrases[3:]
+
+    message_tosend = """Here are the phrases you can think of i guess:
+    """
+    message_tosend += ", ".join(f"`{phrase}`" for phrase in phrases_tosend)
+
+    message_tosend += "\nit's not like i want to help you or anything baka"
+    
+    await interaction.followup.send(message_tosend, ephemeral=True)
+    return
 
 # --- Run the Bot ---
 bot.run(DISCORD_TOKEN)
