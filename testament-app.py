@@ -8,6 +8,7 @@ import datetime
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
+import time # Make sure to import the time module at the top of your file
 
 # --- Configuration ---
 # Load environment variables from a .env file
@@ -40,6 +41,10 @@ intents.messages = True
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+# This will store user IDs and the timestamp of their last command
+gemini_cooldowns = {}
+COOLDOWN_SECONDS = 5
+
 @bot.event
 async def on_ready():
     """Runs when the bot is connected and ready."""
@@ -50,6 +55,55 @@ async def on_ready():
     except Exception as e:
         print(f"Failed to sync commands: {e}")
     print(f'{bot.user} is now online and ready!')
+
+@bot.event
+async def on_message(message):
+    # Prevent the bot from replying to itself
+    if message.author == bot.user:
+        return
+
+    message_content = message.content.lower()
+
+    # --- We want to apply a cooldown to these specific responses ---
+    trigger_phrases = [
+        'ruby-chan', 'ruby chan', 'nani ga suki?', 'wachi ate fries'
+    ]
+
+    if message_content in trigger_phrases:
+        # --- COOLDOWN LOGIC MOVED INSIDE ---
+        user_id = message.author.id
+        current_time = time.time()
+
+        if user_id in gemini_cooldowns:
+            last_call_time = gemini_cooldowns[user_id]
+            # If the user is on cooldown, silently ignore this message.
+            if current_time - last_call_time < COOLDOWN_SECONDS:
+                print(f"User {message.author.display_name} is on cooldown for simple replies.")
+                return 
+        
+        # If we've gotten this far, the user is not on cooldown.
+        # Now we can send the response AND THEN update their timestamp.
+        if message_content == 'ruby-chan' or message_content == 'ruby chan':
+            await message.channel.send('hai~!')
+        elif message_content == 'nani ga suki?':
+            await message.channel.send('chocoominto yori mo a-na-ta <3')
+        elif message_content == 'wachi ate fries':
+        # Define the path to your image
+        # This assumes your script is in the root folder and the image is in /images/
+            image_path = 'assets/images/Wachi_ate_fries.jpeg'
+            
+            try:
+                # Create a discord.File object and send it
+                await message.channel.send(file=discord.File(image_path))
+            except FileNotFoundError:
+                print("Error: The image file was not found at the specified path.")
+                await message.channel.send("Oops! Wachi too short, not found")
+
+        # Update the user's cooldown timestamp AFTER responding.
+        gemini_cooldowns[user_id] = current_time
+    
+    # Allow other bot commands to be processed
+    await bot.process_commands(message)
 
 # --- Helper Function to Split Long Messages ---
 def split_message(content, max_length=1980):
