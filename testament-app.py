@@ -1,4 +1,4 @@
-# For fun, grain of salt program
+# For fun, grain of salt program (migrated to google-genai)
 
 import discord
 from discord.ext import commands
@@ -7,7 +7,9 @@ import json
 import datetime
 import os
 from dotenv import load_dotenv
-import google.generativeai as genai
+# NEW GenAI SDK imports
+from google import genai
+from google.genai import types
 import time # Make sure to import the time module at the top of your file
 
 # --- Configuration ---
@@ -26,13 +28,16 @@ if not GEMINI_API_KEY:
     print("Error: GEMINI_API_KEY not found in .env file.")
     exit()
 
-# --- Gemini API Setup ---
+# --- Gemini API / Google GenAI SDK Setup ---
 try:
-    genai.configure(api_key=GEMINI_API_KEY)
-    gemini_model = genai.GenerativeModel('gemini-2.0-flash-001')
-    print("Gemini API configured successfully.")
+    # Create client for Gemini Developer API
+    # You may omit api_key here if you prefer the SDK to pick GEMINI_API_KEY from env.
+    client = genai.Client(api_key=GEMINI_API_KEY)
+    # Optionally set the model you plan to use later. We'll pass the model name at call time.
+    GEMINI_MODEL = "gemini-2.0-flash-001"  # adjust model name as needed
+    print("Google GenAI (Gemini) client configured successfully.")
 except Exception as e:
-    print(f"Error configuring Gemini API: {e}")
+    print(f"Error configuring Gemini API (genai.Client): {e}")
     exit()
 
 # --- Discord Bot Setup ---
@@ -90,56 +95,36 @@ async def on_message(message):
         elif message_content == 'nani ga suki?':
             await message.channel.send('chocoominto yori mo a-na-ta <3')
         elif message_content == 'wachi ate fries':
-        # Define the path to your image
-        # This assumes your script is in the root folder and the image is in /images/
             image_path = 'assets/images/Wachi_ate_fries.jpeg'
-            
             try:
-                # Create a discord.File object and send it
                 await message.channel.send(file=discord.File(image_path))
             except FileNotFoundError:
                 print("Error: The image file was not found at the specified path.")
                 await message.channel.send("Oops! Wachi too short, not found")
         elif message_content == 'top 10 people i hate':
-        # Define the path to your image
-        # This assumes your script is in the root folder and the image is in /images/
             image_path = 'assets/images/top_10_people_that_i_hate.png'
-            
             try:
-                # Create a discord.File object and send it
                 await message.channel.send(file=discord.File(image_path))
             except FileNotFoundError:
                 print("Error: The image file was not found at the specified path.")
                 await message.channel.send("I don't hate people 👼")
         elif message_content == 'jc muscle':
-        # Define the path to your image
-        # This assumes your script is in the root folder and the image is in /images/
             image_path = 'assets/images/JCSEX.png'
-            
             try:
-                # Create a discord.File object and send it
                 await message.channel.send(file=discord.File(image_path))
             except FileNotFoundError:
                 print("Error: The image file was not found at the specified path.")
                 await message.channel.send("JC got banned from planet fitness for tax evasion 💔")
         elif message_content == 'smart abel wallpaper download':
-        # Define the path to your image
-        # This assumes your script is in the root folder and the image is in /images/
             image_path = 'assets/images/smart_Abel_wallpaper_download.jpg'
-            
             try:
-                # Create a discord.File object and send it
                 await message.channel.send(file=discord.File(image_path))
             except FileNotFoundError:
                 print("Error: The image file was not found at the specified path.")
                 await message.channel.send("JC got banned from planet fitness for tax evasion 💔")
         elif message_content == 'edwin shower':
-        # Define the path to your image
-        # This assumes your script is in the root folder and the image is in /images/
             image_path = 'assets/images/edwin_shower.jpg'
-            
             try:
-                # Create a discord.File object and send it
                 await message.channel.send(file=discord.File(image_path))
             except FileNotFoundError:
                 print("Error: The image file was not found at the specified path.")
@@ -215,13 +200,26 @@ async def summarize(interaction: discord.Interaction, prompt: str, start_date: s
             "--- YOUR ANALYSIS ---\n"
         )
         
-        print("Sending request to Gemini API...")
-        response = gemini_model.generate_content(final_prompt) #FIXME
-        
+        print("Sending request to Gemini API (google-genai)...")
+
+        # --- NEW: use client.models.generate_content(...) ---
+        # You can pass contents either as a plain string, a list, or use types.Part.from_text
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=types.Part.from_text(text=final_prompt),
+            # Optional config, e.g. max tokens:
+            config=types.GenerateContentConfig(
+                max_output_tokens=1024,
+                temperature=0.3
+            )
+        )
+        # The SDK exposes response.text as a convenient accessor.
+        generated_text = response.text
+
         await interaction.followup.send(f"**Your Prompt:**\n> {prompt}\n\n**Gemini's Analysis:**", ephemeral=True)
         
         # Send the response, splitting it if it's too long
-        for part in split_message(response.text):
+        for part in split_message(generated_text):
             await interaction.followup.send(part, ephemeral=True)
 
     except Exception as e:
